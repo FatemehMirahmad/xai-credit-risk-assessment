@@ -4,7 +4,7 @@ __pycache__/
 *.pyo
 *.pyd
 
-# Jupyter / Databricks notebook checkpoints
+# Jupyter / notebook checkpoints
 .ipynb_checkpoints/
 
 # Virtual environments
@@ -12,7 +12,7 @@ __pycache__/
 venv/
 env/
 
-# Data files - do not upload datasets to GitHub
+# Data files - do not upload datasets
 data/
 *.csv
 *.xlsx
@@ -26,7 +26,7 @@ models/
 *.h5
 *.model
 
-# Secrets / credentials
+# Secrets and credentials
 .env
 *.pem
 *.key
@@ -36,10 +36,11 @@ token.json
 # System files
 .DS_Store
 
-# Large or generated outputs
+# Large/generated outputs
 outputs/
 results/metrics/*
 results/figures/*
+results/tables/*
 results/shap_outputs/*
 results/lime_outputs/*
 
@@ -47,5 +48,6 @@ results/lime_outputs/*
 # '!' Forces Git to track important files like results/metrics/.gitkeep  even if results/metrics/* is ignored.
 !results/metrics/.gitkeep
 !results/figures/.gitkeep
+!results/tables/.gitkeep
 !results/shap_outputs/.gitkeep
 !results/lime_outputs/.gitkeep
