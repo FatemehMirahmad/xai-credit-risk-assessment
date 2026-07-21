@@ -51,13 +51,3 @@ df_clean = df_clean.filter(
 df_clean.write.mode('overwrite').format('delta').saveAsTable('dissertation.lendingclub.lc_clean')
 
 display(spark.sql('DESCRIBE DETAIL dissertation.lendingclub.lc_clean'))
-
-from pyspark.sql.functions import when
-from pyspark.sql.functions import col
-
-df = spark.table('dissertation.lendingclub.lc_clean')
-df_labeled = df.filter(col('loan_status').isin('Fully Paid','Charged Off','Default','Late (31-120 days)','Late (16-30 days)'))
-# In PySpark, withColumn() is a DataFrame method used to add a new column or replace an existing column with the same name
-df_labeled = df_labeled.withColumn('default_flag',when(col('loan_status').isin('Charged Off','Default','Late (31-120 days)','Late (16-30 days)'),1).otherwise(0))
-
-df_labeled.select('loan_status').distinct().show()
