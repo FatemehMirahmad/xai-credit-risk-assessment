@@ -97,6 +97,8 @@ for c in missing_columns:
 # For emp_length_years, mths_since_rcnt_il, and il_util, -1 means "missing information"
 # already have 'has_mths_since_last_delinq' so mths_since_last_delinq flag does not need to be created
 # filling missing values with -1
+if 'mths_since_last_delinq' in df_ml.columns:
+    df_ml = df_ml.fillna({'mths_since_last_delinq': -1})
 if 'emp_length_years' in df_ml.columns:
     df_ml = df_ml.fillna({'emp_length_years': -1})
 if 'mths_since_rcnt_il' in df_ml.columns:
