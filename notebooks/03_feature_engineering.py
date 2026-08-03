@@ -1,10 +1,11 @@
 from pyspark.sql.functions import when, col, try_divide, lit, count, sum
 
-df = spark.table('dissertation.lendingclub.lc_clean')
-# Creating Default Flag
-df_labeled = df.filter(col('loan_status').isin('Fully Paid','Charged Off','Default','Late (31-120 days)','Late (16-30 days)'))
-# In PySpark, withColumn() is a DataFrame method used to add a new column or replace an existing column with the same name
-df_labeled = df_labeled.withColumn('default_flag',when(col('loan_status').isin('Charged Off','Default','Late (31-120 days)','Late (16-30 days)'),1).otherwise(0))
+df_labeled = spark.table('dissertation.lendingclub.lc_clean')
+display(
+    df_labeled.groupBy("loan_status", "default_flag")
+              .count()
+              .orderBy("default_flag", "loan_status")
+)
 
 # creating ratios
 df_labeled = df_labeled.withColumn('loan_to_income_ratio',try_divide(col('loan_amnt'),col('annual_inc')))
@@ -142,3 +143,4 @@ display(df_ml.select(missing_exprs))
 
 # saving the df_ml datafram as lc_ml table
 df_ml.write.mode('overwrite').format('delta').option('overwriteSchema', 'true').saveAsTable('dissertation.lendingclub.lc_ml_no_leakage')
+
