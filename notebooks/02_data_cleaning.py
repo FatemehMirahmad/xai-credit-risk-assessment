@@ -96,7 +96,7 @@ df_clean = df_clean.withColumn(
     )
 
 df_clean = df_clean.withColumn(
-    "credit_history_year",
+    "credit_history_years",
     col("credit_history_months") / lit(12)
 )
 # display(spark.sql("SELECT * FROM dissertation.lendingclub.lc_raw LIMIT 10"))
