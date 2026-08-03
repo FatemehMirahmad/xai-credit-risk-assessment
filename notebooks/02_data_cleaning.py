@@ -1,8 +1,9 @@
 from pyspark.sql.functions import col, regexp_replace, regexp_extract ,trim , when, month, months_between, to_date, lit, concat
 import pandas as pd
 df_raw = spark.table('dissertation.lendingclub.lc_raw')
-# df_raw.select('loan_status').distinct().show()
+df_raw.select('loan_status').distinct().show()
 df_clean = df_raw.select(
+    col("id").cast("string").alias("id"),
     col('loan_amnt').cast('double').alias('loan_amnt'),
     col('funded_amnt').cast('double').alias('funded_amnt'),
     col('funded_amnt_inv').cast('double').alias('funded_amnt_inv'),
@@ -70,10 +71,12 @@ df_clean = df_raw.select(
     )
 # removing unresolved loan status: Current, In Grace Period
 df_clean = df_clean.filter(col('loan_status').isin('Fully Paid','Charged Off','Default','Late (31-120 days)','Late (16-30 days)'))
-# df_clean.select('loan_status').distinct().show()
-# df_new = df.withColumn("col_name", column_expression)
-df_clean = df_clean.withColumn('default_status',(when(col('loan_status').isin('Default','Charged Off','Late (31-120 days)','Late (16-30 days)'),1).otherwise(0)))
-# df_clean.select('default_status').distinct().show()
+print('checking if loan_status is filtered: ')
+df_clean.select('loan_status').distinct().show()
+
+# Creating Default Flag
+df_clean = df_clean.withColumn('default_flag',(when(col('loan_status').isin('Default','Charged Off','Late (31-120 days)','Late (16-30 days)'),1).otherwise(0)))
+# df_clean.select('default_flag').distinct().show()
 
 # making emp_length_years out of emp_length
 df_clean = df_clean.withColumn("emp_length_years",when(col("emp_length").isNull(), lit(None).cast("int"))
@@ -81,12 +84,12 @@ df_clean = df_clean.withColumn("emp_length_years",when(col("emp_length").isNull(
         .when(trim(col("emp_length")) == "< 1 year", lit(0))
         .otherwise(regexp_extract(trim(col("emp_length")), r"(\d+)", 1).cast("int")))
 # display(df_clean.select('emp_length_years').dtypes)
+
 # turning term from 36 months to 36 and 60 months to 60 
 df_clean = df_clean.withColumn("term_months",
     regexp_extract(trim(col("term")), r"(\d+)", 1).cast("int"))
 
-# # TO_DATE(string_to_convert, 'format_mask')
-# # MONTHS_BETWEEN(date1, date2)
+
 df_clean = df_clean.withColumn(
     'credit_history_months',
     months_between(to_date(concat(lit("01-"),col('issue_d')),'dd-MMM-yyyy'),to_date(concat(lit("01-"),col('earliest_cr_line')),'dd-MMM-yyyy'))
@@ -98,6 +101,7 @@ df_clean = df_clean.withColumn(
 )
 # display(spark.sql("SELECT * FROM dissertation.lendingclub.lc_raw LIMIT 10"))
 # display(df_clean.limit(10))
+
 essential_cols = [
     "loan_amnt",
     "annual_inc",
@@ -105,7 +109,7 @@ essential_cols = [
     "term_months",
     "installment",
     "loan_status",
-    "default_status"
+    "default_flag"
 ]
 # print("Clean rows before removing nulls:", df_clean.count()
 for c in essential_cols:
@@ -120,9 +124,9 @@ df_clean = df_clean.filter(col("dti").cast("double") >= 0)
 # print("Clean columns:", len(df_clean.columns))
 
 display(
-    df_clean.groupBy("loan_status", "default_status")
+    df_clean.groupBy("loan_status", "default_flag")
             .count()
-            .orderBy("default_status", "loan_status")
+            .orderBy("default_flag", "loan_status")
 )
 
 display(df_clean.limit(10))
