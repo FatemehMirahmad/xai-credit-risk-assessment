@@ -48,8 +48,8 @@ display(df.limit(5))
 # Defining categorical and numerical columns
 categorical_cols = [c for c, t in df.dtypes if  t == 'string']
 numerical_cols = [c for c, t in df.dtypes if t in ['int','bigint','float','double'] and c != 'default_flag']
-print('Categorical columns: ',catagorical_col)
-print('Numerical columns: ',numerical_col)
+print('Categorical columns: ',categorical_cols)
+print('Numerical columns: ',numerical_cols)
 
 # Train and Test split
 train_df, test_df = df.randomSplit([0.8,0.2], seed = 42)
