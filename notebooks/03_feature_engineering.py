@@ -1,11 +1,28 @@
 from pyspark.sql.functions import when, col, try_divide, lit, count, sum
 
 df_labeled = spark.table('dissertation.lendingclub.lc_clean')
+df_2007_2018 = spark.table('dissertation.lendingclub.accepted_2007_2018_raw')
+
+# joining FICO score, Bankruptcy records , and Mortgage accounts columns from df_2007_2018 based on id column
+credit_lookup = (df_2007_2018.select(col('id').cast('string').alias('id'),
+                                     
+                                     col('fico_range_low').cast('double').alias('fico_range_low'),
+                                     col('fico_range_high').cast('double').alias('fico_range_high'),
+
+                                     col('pub_rec_bankruptcies').cast('double').alias('pub_rec_bankruptcies'),
+                                     col('mort_acc').cast('double').alias('mort_acc')
+                                    ).withColumn('fico_score',(col('fico_range_low') + col('fico_range_high'))/lit(2))
+                  .dropDuplicates(['id'])
+                  )
+
+df_labeled = df_labeled.join(credit_lookup, on='id', how='left')
+display(df_labeled.limit(5))
 display(
     df_labeled.groupBy("loan_status", "default_flag")
               .count()
               .orderBy("default_flag", "loan_status")
 )
+
 
 # creating ratios
 df_labeled = df_labeled.withColumn('loan_to_income_ratio',try_divide(col('loan_amnt'),col('annual_inc')))
@@ -19,8 +36,70 @@ df_labeled = df_labeled.withColumn('has_public_record',when(col('pub_rec')> 0, 1
 df_labeled = df_labeled.withColumn('has_collections_12_mths',when(col('collections_12_mths_ex_med')> 0, 1).otherwise(0))
 df_labeled = df_labeled.withColumn('has_mths_since_last_delinq',when(col('mths_since_last_delinq').isNotNull(), 1).otherwise(0))
 
+
+
+def prepare_ml_table(source_df,selected_cols,source_df_name):
+
+    df_ml = source_df.select([c for c in selected_cols if c in source_df.columns])
+    categorical_cols = [c for c,t in df_ml.dtypes if t == 'string']
+
+    # checking null values
+    print(f'Missing values before preparing {source_df_name} table:')
+    missing_exprs = [
+        sum(when(col(c).isNull(), 1).otherwise(0)).alias(c)
+        for c in df_ml.columns
+    ]
+    display(df_ml.select(missing_exprs))
+
+    # creating missing flags:
+    missing_columns = ['emp_length_years', 'mths_since_rcnt_il', 'il_util']
+    for c in missing_columns:
+        df_ml = df_ml.withColumn(f'{c}_missing', when(col(c).isNull(), 1).otherwise(0))
+
+
+    # For emp_length_years, mths_since_rcnt_il, and il_util, -1 means "missing information"
+    # already have 'has_mths_since_last_delinq' so mths_since_last_delinq flag does not need to be created
+    # filling missing values with -1
+    if 'mths_since_last_delinq' in df_ml.columns:
+        df_ml = df_ml.fillna({'mths_since_last_delinq': -1})
+    if 'emp_length_years' in df_ml.columns:
+        df_ml = df_ml.fillna({'emp_length_years': -1})
+    if 'mths_since_rcnt_il' in df_ml.columns:
+        df_ml = df_ml.fillna({'mths_since_rcnt_il': -1})
+    if 'il_util' in df_ml.columns:
+        df_ml = df_ml.fillna({'il_util': -1})
+
+
+    # filling null values in catagorical columns with 'Unknown'
+    df_ml = df_ml.fillna("Unknown", subset = categorical_cols)
+
+
+    median_fill_cols = ['inq_last_6mths', 'revol_util', 'open_acc_6m', 'open_il_12m', 'open_il_24m', 'total_bal_il' , 'open_rv_12m', 'open_rv_24m',  'max_bal_bc', 'all_util', 'inq_fi', 'total_cu_tl', 'inq_last_12m']
+
+    median_values = {}
+    for c in median_fill_cols:
+        if c in df_ml.columns:
+            median = df_ml.approxQuantile(c, [0.5], 0.01)[0]
+            if median is not None:
+                median_values[c] = median
+    # filling null values in numerical columns with median
+    df_ml = df_ml.fillna(median_values)
+
+
+    print(f'Missing values after preparing {source_df_name} table: ')
+    missing_exprs = [
+        sum(when(col(c).isNull(), 1).otherwise(0)).alias(c)
+        for c in df_ml.columns
+    ]
+    display(df_ml.select(missing_exprs))
+    
+    # Checking number of rows and columns
+    print(f'Number of rows in {source_df_name}: ', df_ml.count())
+    print(f'Number of columns in {source_df_name}: ', len(df_ml.columns))
+    return df_ml
+
 # selecting columns to keep
-selected_col= ["loan_amnt",
+base_selected_cols= ["loan_amnt",
     "funded_amnt",
     "funded_amnt_inv",
     "term_months",
@@ -72,75 +151,43 @@ selected_col= ["loan_amnt",
     'initial_list_status',
     'application_type']
 
-
-# Creating df_ml dataframe
-df_ml = df_labeled.select([c for c in selected_col if c in df_labeled.columns])
-display(df_ml.limit(10))
-# seperating numerical and categorical columns
-numerical_cols = [c for c,t in df_ml.dtypes if t in ['double','int','bigint', 'float'] and c != 'default_flag']
-categorical_cols = [c for c,t in df_ml.dtypes if t == 'string']
-
-# checking null values
-missing_exprs = [
-    sum(when(col(c).isNull(), 1).otherwise(0)).alias(c)
-    for c in df_ml.columns
-]
-display(df_ml.select(missing_exprs))
-
-# columns with missing values: inq_last_6mths, revol_util, open_acc_6m, open_il_12m, open_il_24m, total_bal_il , open_rv_12m, open_rv_24m,  max_bal_bc, all_util, inq_fi, total_cu_tl, inq_last_12m, mths_since_last_delinq, emp_length_years, mths_since_rcnt_il, il_util
-
-# creating missing flags:
-missing_columns = ['emp_length_years', 'mths_since_rcnt_il', 'il_util']
-for c in missing_columns:
-    df_ml = df_ml.withColumn(f'{c}_missing', when(col(c).isNull(), 1).otherwise(0))
-
-
-# For emp_length_years, mths_since_rcnt_il, and il_util, -1 means "missing information"
-# already have 'has_mths_since_last_delinq' so mths_since_last_delinq flag does not need to be created
-# filling missing values with -1
-if 'mths_since_last_delinq' in df_ml.columns:
-    df_ml = df_ml.fillna({'mths_since_last_delinq': -1})
-if 'emp_length_years' in df_ml.columns:
-    df_ml = df_ml.fillna({'emp_length_years': -1})
-if 'mths_since_rcnt_il' in df_ml.columns:
-    df_ml = df_ml.fillna({'mths_since_rcnt_il': -1})
-if 'il_util' in df_ml.columns:
-    df_ml = df_ml.fillna({'il_util': -1})
-
-# display(df_ml.select('mths_since_last_delinq').distinct().orderBy('mths_since_last_delinq'))
-
-# filling null values in catagorical columns with 'Unknown'
-df_ml = df_ml.fillna("Unknown", subset = categorical_cols)
-
-
-# calculate median for inq_last_6mths, revol_util, open_acc_6m, open_il_12m, open_il_24m, total_bal_il , open_rv_12m, open_rv_24m,  max_bal_bc, all_util, inq_fi, total_cu_tl, inq_last_12m columns
-median_fill_cols = ['inq_last_6mths', 'revol_util', 'open_acc_6m', 'open_il_12m', 'open_il_24m', 'total_bal_il' , 'open_rv_12m', 'open_rv_24m',  'max_bal_bc', 'all_util', 'inq_fi', 'total_cu_tl', 'inq_last_12m']
-median_values = {}
-for c in median_fill_cols:
-    if c in df_ml.columns:
-        median = df_ml.approxQuantile(c, [0.5], 0.01)[0]
-        if median is not None:
-            median_values[c] = median
-# filling null values in numerical columns with median
-df_ml = df_ml.fillna(median_values)
-
-# Checking number of rows and columns
-print('Number of rows: ', df_ml.count())
-print('Number of columns: ', len(df_ml.columns))
+print('Preparing df_ml_no_leakage: ')
+df_ml_no_leakage = prepare_ml_table(df_labeled,base_selected_cols,'df_ml_no_leakage')
+print("No-leakage table: ")
+print("Rows:", df_ml_no_leakage.count())
+print("Columns:", len(df_ml_no_leakage.columns))
 
 # checking default flag distribution
+print('Default flag distribution in df_ml_no_leakage: ')
 display(
-    df_ml.groupBy('default_flag')
+    df_ml_no_leakage.groupBy('default_flag')
         .count()
         .orderBy('default_flag')
         )
 
-missing_exprs = [
-    sum(when(col(c).isNull(), 1).otherwise(0)).alias(c)
-    for c in df_ml.columns
-]
-display(df_ml.select(missing_exprs))
 
 # saving the df_ml datafram as lc_ml table
-df_ml.write.mode('overwrite').format('delta').option('overwriteSchema', 'true').saveAsTable('dissertation.lendingclub.lc_ml_no_leakage')
+df_ml_no_leakage.write.mode('overwrite').format('delta').option('overwriteSchema', 'true').saveAsTable('dissertation.lendingclub.lc_ml_no_leakage')
+print("Saved table: dissertation.lendingclub.lc_ml_no_leakage")
 
+# creating a new table with extra credit columns from the other source
+extra_credit_cols  = ['fico_score',
+    'pub_rec_bankruptcies',
+    'mort_acc']
+
+print('Preparing df_ml_no_leakage_fico: ')
+df_ml_no_leakage_fico = prepare_ml_table(df_labeled,base_selected_cols + extra_credit_cols,'df_ml_no_leakage_fico')
+
+print("No-leakage table with FICO / bankruptcy / mortgage features")
+print("Rows:", df_ml_no_leakage_fico.count())
+print("Columns:", len(df_ml_no_leakage_fico.columns))
+
+# checking default flag distribution
+print('Default flag distribution in df_ml_no_leakage_fico: ')
+display(
+    df_ml_no_leakage_fico.groupBy('default_flag')
+        .count()
+        .orderBy('default_flag')
+        )
+df_ml_no_leakage_fico.write.mode('overwrite').format('delta').option('overwriteSchema', 'true').saveAsTable('dissertation.lendingclub.lc_ml_no_leakage_fico')
+print("Saved table: dissertation.lendingclub.lc_ml_no_leakage_fico")
