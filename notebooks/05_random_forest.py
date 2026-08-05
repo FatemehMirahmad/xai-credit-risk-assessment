@@ -120,7 +120,9 @@ print("Default Precision:", default_precision)
 print("Default Recall:", default_recall)
 print("Default F1:", default_f1)
 
-metrics_rows = [("Random Forest",
+metrics_rows = [
+    (
+        "Random Forest",
         float(auc),
         float(accuracy),
         float(f1),
@@ -128,8 +130,20 @@ metrics_rows = [("Random Forest",
         float(recall),
         float(default_precision),
         float(default_recall),
-        float(default_f1))]
-metrics_schema = ["model","auc","accuracy","precision","recall","f1","default_precision","default_recall","default_f1"]
+        float(default_f1)
+    )
+]
+metrics_schema = metrics_schema = [
+    "model",
+    "auc",
+    "accuracy",
+    "f1",
+    "precision",
+    "recall",
+    "default_precision",
+    "default_recall",
+    "default_f1"
+]
 rf_metrics = spark.createDataFrame(metrics_rows, metrics_schema)
 
 display(rf_metrics)
