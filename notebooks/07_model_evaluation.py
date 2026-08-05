@@ -36,9 +36,6 @@ display(
     comparison_rounded.orderBy(col("default_recall").desc())
 )
 
-comparison_rounded.write.mode("overwrite") \
-    .format("delta") \
-    .option("overwriteSchema", "true") \
-    .saveAsTable("dissertation.lendingclub.lc_model_comparison")
+comparison_rounded.write.mode("overwrite").format("delta").option("overwriteSchema", "true").saveAsTable("dissertation.lendingclub.lc_model_comparison")
 
 print("Saved table: dissertation.lendingclub.lc_model_comparison")
