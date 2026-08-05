@@ -26,6 +26,16 @@ comparison_rounded = comparison_df.select(
 
 display(comparison_rounded)
 
+print("Models ranked by AUC:")
+display(
+    comparison_rounded.orderBy(col("auc").desc())
+)
+
+print("Models ranked by default recall:")
+display(
+    comparison_rounded.orderBy(col("default_recall").desc())
+)
+
 comparison_rounded.write.mode("overwrite") \
     .format("delta") \
     .option("overwriteSchema", "true") \
