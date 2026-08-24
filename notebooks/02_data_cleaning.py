@@ -16,7 +16,7 @@ df_clean = df_raw.select(
 
     trim(col("term")).alias("term"),
 
-    regexp_replace(col("int_rate").cast("string"), "%", "").cast("double").alias("int_rate"),
+    expr("try_cast(regexp_replace(`int_rate`, '%', '') as double)").alias("int_rate"),
 
     to_double("installment").alias("installment"),
 
@@ -42,7 +42,7 @@ df_clean = df_raw.select(
     to_int("open_acc").alias("open_acc"),
     to_int("pub_rec").alias("pub_rec"),
     to_double("revol_bal").alias("revol_bal"),
-    regexp_replace(col("revol_util").cast("string"), "%", "").cast("double").alias("revol_util"),
+    expr("try_cast(regexp_replace(`revol_util`, '%', '') as double)").alias("revol_util"),
 
     
     to_int("total_acc").alias("total_acc"),
@@ -118,7 +118,7 @@ df_clean = df_clean.withColumn(
     "credit_history_years",
     col("credit_history_months") / lit(12)
 )
-display(spark.sql("SELECT * FROM dissertation.lendingclub.lc_raw LIMIT 10"))
+display(spark.sql("SELECT * FROM dissertation.lendingclub.lc_2007_2017_raw_fico LIMIT 10"))
 display(df_clean.limit(10))
 
 essential_cols = [
