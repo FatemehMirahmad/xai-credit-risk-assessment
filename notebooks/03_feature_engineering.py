@@ -1,4 +1,4 @@
-from pyspark.sql.functions import when, col, try_divide, lit, count, sum
+from pyspark.sql.functions import when, col, try_divide, lit, sum
 
 df_labeled = spark.table('dissertation.lendingclub.lc_2007_2017_clean')
 
@@ -35,7 +35,11 @@ df_labeled = df_labeled.withColumn('has_delinquency_2yrs',when(col('delinq_2yrs'
 df_labeled = df_labeled.withColumn('has_public_record',when(col('pub_rec')> 0, 1).otherwise(0))
 df_labeled = df_labeled.withColumn('has_collections_12_mths',when(col('collections_12_mths_ex_med')> 0, 1).otherwise(0))
 df_labeled = df_labeled.withColumn('has_mths_since_last_delinq',when(col('mths_since_last_delinq').isNotNull(), 1).otherwise(0))
-
+if 'pub_rec_bankruptcies' in df_labeled.columns:
+    df_labeled = df_labeled.withColumn(
+        'has_bankruptcy',
+        when(col('pub_rec_bankruptcies') > 0, 1).otherwise(0)
+    )
 
 
 def prepare_ml_table(source_df,selected_cols,source_df_name):
@@ -66,7 +70,7 @@ def prepare_ml_table(source_df,selected_cols,source_df_name):
     for c in missing_columns:
         if c in df_ml.columns:
             df_ml = df_ml.withColumn(
-                f"{c}_missing",
+                f'{c}_missing',
                 when(col(c).isNull(), 1).otherwise(0))
 
 
@@ -223,7 +227,8 @@ print('Saved table: dissertation.lendingclub.lc_2007_2017_ml_no_leakage')
 # creating a new table with extra credit columns from the other source
 extra_credit_cols  = ['fico_score',
     'pub_rec_bankruptcies',
-    'mort_acc']
+    'mort_acc',
+    'has_bankruptcy']
 
 print('Preparing df_ml_no_leakage_fico: ')
 df_ml_no_leakage_fico = prepare_ml_table(df_labeled,base_selected_cols + extra_credit_cols,'df_ml_no_leakage_fico')
