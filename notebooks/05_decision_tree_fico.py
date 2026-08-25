@@ -105,7 +105,7 @@ dt_predictions.write.mode('overwrite').format('delta').saveAsTable('dissertation
 # evaluation
 auc_evaluator = BinaryClassificationEvaluator(
     labelCol = 'default_flag',
-    rawPredictionCol  ='rawPrediction',
+    rawPredictionCol  ='probability',
     metricName = 'areaUnderROC'
 )
 accuracy_evaluator = MulticlassClassificationEvaluator(
