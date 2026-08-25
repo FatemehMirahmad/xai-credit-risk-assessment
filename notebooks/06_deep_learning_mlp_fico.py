@@ -30,7 +30,7 @@ gc.collect()
 
 print('Cleared previous ML objects.')
 
-df = spark.table('dissertation.lendingclub.lc_2007_2017_ml_no_leakage')
+df = spark.table('dissertation.lendingclub.lc_2007_2017_ml_no_leakage_fico')
 print('Number of rows: ', df.count())
 print('Number of columns: ',(len(df.columns)))
 
@@ -197,7 +197,7 @@ print('Default F1:', default_f1)
 
 metrics_rows = [
     (
-        'Multilayer Perceptron',
+        'Multilayer Perceptron FICO',
         float(auc),
         float(accuracy),
         float(f1),
@@ -225,9 +225,9 @@ display(mlp_metrics)
 # saving mlp metrics
 
 
-mlp_metrics.write.mode('overwrite').option('overwriteSchema', 'true').format('delta').saveAsTable('dissertation.lendingclub.lc_2007_2017_deep_learning_mlp_metrics')
+mlp_metrics.write.mode('overwrite').option('overwriteSchema', 'true').format('delta').saveAsTable('dissertation.lendingclub.lc_2007_2017_deep_learning_mlp_fico_metrics')
 
-print('Saved table: dissertation.lendingclub.lc_2007_2017_deep_learning_mlp_metrics')
+print('Saved table: dissertation.lendingclub.lc_2007_2017_deep_learning_mlp_fico_metrics')
 
 # saving mlp model and preprocessing model
 spark.sql('''
@@ -235,11 +235,11 @@ CREATE VOLUME IF NOT EXISTS
 dissertation.lendingclub.model_artifacts
 ''')
 
-preprocessing_model.write().overwrite().save('dbfs:/Volumes/dissertation/lendingclub/model_artifacts/lc_2007_2017_deep_learning_mlp_preprocessing')
-mlp_model.write().overwrite().save('dbfs:/Volumes/dissertation/lendingclub/model_artifacts/lc_2007_2017_deep_learning_mlp_model')
-mlp_predictions.write.mode('overwrite').format('delta').option('overwriteSchema', 'true').saveAsTable('dissertation.lendingclub.lc_2007_2017_deep_learning_mlp_predictions')
+preprocessing_model.write().overwrite().save('dbfs:/Volumes/dissertation/lendingclub/model_artifacts/lc_2007_2017_deep_learning_mlp_fico_preprocessing')
+mlp_model.write().overwrite().save('dbfs:/Volumes/dissertation/lendingclub/model_artifacts/lc_2007_2017_deep_learning_mlp_fico_model')
+mlp_predictions.write.mode('overwrite').format('delta').option('overwriteSchema', 'true').saveAsTable('dissertation.lendingclub.lc_2007_2017_deep_learning_mlp_fico_predictions')
 
-print('Saved table: dissertation.lendingclub.lc_2007_2017_deep_learning_mlp_predictions')
-print('Saved preprocessing model to: dbfs:/Volumes/dissertation/lendingclub/model_artifacts/lc_2007_2017_deep_learning_mlp_preprocessing')
-print('Saved MLP model to: dbfs:/Volumes/dissertation/lendingclub/model_artifacts/lc_2007_2017_deep_learning_mlp_model')
-print('06_deep_learning_mlp.py completed successfully.')
+print('Saved table: dissertation.lendingclub.lc_2007_2017_deep_learning_mlp_fico_predictions')
+print('Saved preprocessing model to: dbfs:/Volumes/dissertation/lendingclub/model_artifacts/lc_2007_2017_deep_learning_mlp_fico_preprocessing')
+print('Saved MLP model to: dbfs:/Volumes/dissertation/lendingclub/model_artifacts/lc_2007_2017_deep_learning_mlp_fico_model')
+print('06_deep_learning_mlp_fico.py completed successfully.')

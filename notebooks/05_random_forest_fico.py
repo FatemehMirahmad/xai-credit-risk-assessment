@@ -5,7 +5,7 @@ from pyspark.ml.evaluation import BinaryClassificationEvaluator, MulticlassClass
 from pyspark.sql.functions import col
 
 
-df = spark.read.table('dissertation.lendingclub.lc_2007_2017_ml_no_leakage')
+df = spark.read.table('dissertation.lendingclub.lc_2007_2017_ml_no_leakage_fico')
 print('Number of rows: ', df.count())
 print('Number of columns: ',(len(df.columns)))
 
@@ -57,7 +57,7 @@ print('Random Forest model trained.')
 rf_predictions = rf_model.transform(test_df).select('default_flag','prediction','probability','rawPrediction')
 display(rf_predictions.limit(10))
 
-rf_predictions.write.mode('overwrite').format('delta').saveAsTable('dissertation.lendingclub.lc_2007_2017_random_forest_predictions')
+rf_predictions.write.mode('overwrite').format('delta').saveAsTable('dissertation.lendingclub.lc_2007_2017_random_forest_fico_predictions')
 # random forest evaluation
 
 auc_evaluator = BinaryClassificationEvaluator(labelCol='default_flag',
@@ -122,7 +122,7 @@ print('Default Precision:', default_precision)
 print('Default Recall:', default_recall)
 print('Default F1:', default_f1)
 
-metrics_rows = [('Random Forest',float(auc),float(accuracy),float(f1),float(precision),float(recall),float(default_precision),float(default_recall),float(default_f1))]
+metrics_rows = [('Random Forest FICO',float(auc),float(accuracy),float(f1),float(precision),float(recall),float(default_precision),float(default_recall),float(default_f1))]
 metrics_schema = ['model','auc','accuracy','f1','precision','recall','default_precision','default_recall','default_f1']
 rf_metrics = spark.createDataFrame(metrics_rows, metrics_schema)
 
@@ -131,15 +131,15 @@ display(rf_metrics)
 rf_metrics.write.mode('overwrite') \
     .format('delta') \
     .option('overwriteSchema', 'true') \
-    .saveAsTable('dissertation.lendingclub.lc_2007_2017_random_forest_metrics')
+    .saveAsTable('dissertation.lendingclub.lc_2007_2017_random_forest_fico_metrics')
 
-print('Saved table: dissertation.lendingclub.lc_2007_2017_random_forest_metrics')
+print('Saved table: dissertation.lendingclub.lc_2007_2017_random_forest_fico_metrics')
 
 # saving random forest model pipleline
 spark.sql('''
 CREATE VOLUME IF NOT EXISTS dissertation.lendingclub.model_artifacts
 ''')
-MODEL_PATH = 'dbfs:/Volumes/dissertation/lendingclub/model_artifacts/lc_2007_2017_random_forest_pipeline'
+MODEL_PATH = 'dbfs:/Volumes/dissertation/lendingclub/model_artifacts/lc_2007_2017_random_forest_fico_pipeline'
 rf_model.write().overwrite().save(MODEL_PATH)
 
 print('Saved Random Forest pipeline model to:', MODEL_PATH)

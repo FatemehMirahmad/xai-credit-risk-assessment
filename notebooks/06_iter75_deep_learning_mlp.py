@@ -111,11 +111,11 @@ print('Number of input features: ', input_size)
 
 # Neural Network Architecture
 # nember of neurons in each hidden layer (2 comes from the number of classes)
-layers = [input_size,64 , 32, 2]
+layers = [input_size, 64, 32, 2]
 print('MLP architecture: ', layers)
 
 # Creating Multilayer Perceptron Classifier
-mlp = MultilayerPerceptronClassifier(featuresCol='features', labelCol='default_flag', predictionCol='prediction',rawPredictionCol= 'rawPrediction', layers=layers, maxIter=50, blockSize=256, solver= 'l-bfgs', seed=42)
+mlp = MultilayerPerceptronClassifier(featuresCol='features', labelCol='default_flag', predictionCol='prediction',rawPredictionCol= 'rawPrediction', layers=layers, maxIter=75, blockSize=256, solver= 'l-bfgs', seed=42)
 print('MLP configuration:')
 print('Layers:', layers)
 print('Maximum iterations:', mlp.getMaxIter())
@@ -225,9 +225,9 @@ display(mlp_metrics)
 # saving mlp metrics
 
 
-mlp_metrics.write.mode('overwrite').option('overwriteSchema', 'true').format('delta').saveAsTable('dissertation.lendingclub.lc_2007_2017_deep_learning_mlp_metrics')
+mlp_metrics.write.mode('overwrite').option('overwriteSchema', 'true').format('delta').saveAsTable('dissertation.lendingclub.lc_2007_2017_deep_learning_mlp_iter75_metrics')
 
-print('Saved table: dissertation.lendingclub.lc_2007_2017_deep_learning_mlp_metrics')
+print('Saved table: dissertation.lendingclub.lc_2007_2017_deep_learning_mlp_iter75_metrics')
 
 # saving mlp model and preprocessing model
 spark.sql('''
@@ -235,11 +235,11 @@ CREATE VOLUME IF NOT EXISTS
 dissertation.lendingclub.model_artifacts
 ''')
 
-preprocessing_model.write().overwrite().save('dbfs:/Volumes/dissertation/lendingclub/model_artifacts/lc_2007_2017_deep_learning_mlp_preprocessing')
-mlp_model.write().overwrite().save('dbfs:/Volumes/dissertation/lendingclub/model_artifacts/lc_2007_2017_deep_learning_mlp_model')
-mlp_predictions.write.mode('overwrite').format('delta').option('overwriteSchema', 'true').saveAsTable('dissertation.lendingclub.lc_2007_2017_deep_learning_mlp_predictions')
+preprocessing_model.write().overwrite().save('dbfs:/Volumes/dissertation/lendingclub/model_artifacts/lc_2007_2017_deep_learning_mlp__iter75preprocessing')
+mlp_model.write().overwrite().save('dbfs:/Volumes/dissertation/lendingclub/model_artifacts/lc_2007_2017_deep_learning_mlp_iter75_model')
+mlp_predictions.write.mode('overwrite').format('delta').option('overwriteSchema', 'true').saveAsTable('dissertation.lendingclub.lc_2007_2017_deep_learning_mlp_iter75_predictions')
 
-print('Saved table: dissertation.lendingclub.lc_2007_2017_deep_learning_mlp_predictions')
-print('Saved preprocessing model to: dbfs:/Volumes/dissertation/lendingclub/model_artifacts/lc_2007_2017_deep_learning_mlp_preprocessing')
-print('Saved MLP model to: dbfs:/Volumes/dissertation/lendingclub/model_artifacts/lc_2007_2017_deep_learning_mlp_model')
-print('06_deep_learning_mlp.py completed successfully.')
+print('Saved table: dissertation.lendingclub.lc_2007_2017_deep_learning_mlp_iter75_predictions')
+print('Saved preprocessing model to: dbfs:/Volumes/dissertation/lendingclub/model_artifacts/lc_2007_2017_deep_learning_mlp_iter75_preprocessing')
+print('Saved MLP model to: dbfs:/Volumes/dissertation/lendingclub/model_artifacts/lc_2007_2017_deep_learning_mlp_iter75_model')
+print('06_iter75_deep_learning_mlp.py completed successfully.')

@@ -6,7 +6,6 @@ try:
     del lr_model
 except NameError:
     pass
-
 try:
     del lr_pipeline
 except NameError:
