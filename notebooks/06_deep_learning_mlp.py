@@ -111,11 +111,11 @@ print('Number of input features: ', input_size)
 
 # Neural Network Architecture
 # nember of neurons in each hidden layer (2 comes from the number of classes)
-layers = [input_size,64 , 32, 2]
+layers = [input_size, 64, 32, 2]
 print('MLP architecture: ', layers)
 
 # Creating Multilayer Perceptron Classifier
-mlp = MultilayerPerceptronClassifier(featuresCol='features', labelCol='default_flag', predictionCol='prediction',rawPredictionCol= 'rawPrediction', layers=layers, maxIter=50, blockSize=256, solver= 'l-bfgs', seed=42)
+mlp = MultilayerPerceptronClassifier(featuresCol='features', labelCol='default_flag', predictionCol='prediction',rawPredictionCol= 'rawPrediction', layers=layers, maxIter=75, blockSize=256, solver= 'l-bfgs', seed=42)
 print('MLP configuration:')
 print('Layers:', layers)
 print('Maximum iterations:', mlp.getMaxIter())
