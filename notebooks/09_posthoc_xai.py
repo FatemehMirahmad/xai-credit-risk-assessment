@@ -1,8 +1,3 @@
-# ============================================================
-# 09_posthoc_xai.py
-#
-# Post-hoc XAI for the final MLP FICO model
-#
 # Main objectives:
 # 1. Load the final saved MLP FICO model
 # 2. Generate sampled global Kernel SHAP explanations
@@ -10,16 +5,16 @@
 # 4. Explain high-confidence TP / TN / FP / FN cases
 # 5. Retain original borrower values for interpretation
 # 6. Save final XAI tables and figures
-#
+
 # LIME is intentionally excluded from the final analysis because
 # previous experiments produced unstable / effectively zero local
 # surrogate coefficients for several diagnostic cases.
-# ============================================================
 
 
-# ============================================================
+
+
 # 1. Imports
-# ============================================================
+
 
 !pip install shap
 import os
@@ -47,9 +42,9 @@ from pyspark.sql.functions import (
 )
 
 
-# ============================================================
+
 # 2. Configuration
-# ============================================================
+
 
 DATA_TABLE = (
     "dissertation.lendingclub."
@@ -73,10 +68,8 @@ MLP_MODEL_PATH = (
 
 RANDOM_SEED = 42
 
-
-# ------------------------------------------------------------
-# SHAP configuration
-# ------------------------------------------------------------
+----
+# SHAP configuration----
 
 # Pool of actual training observations used before k-means
 BACKGROUND_POOL_ROWS = 500
@@ -97,9 +90,9 @@ TOP_FEATURES = 20
 PREDICTION_BATCH_SIZE = 2000
 
 
-# ============================================================
+
 # 3. Output location
-# ============================================================
+
 
 spark.sql(
     """
@@ -127,9 +120,9 @@ print(
 )
 
 
-# ============================================================
+
 # 4. Load final FICO dataset
-# ============================================================
+
 
 df = spark.table(
     DATA_TABLE
@@ -147,9 +140,9 @@ print(
 )
 
 
-# ============================================================
+
 # 5. Load saved preprocessing pipeline and MLP model
-# ============================================================
+
 
 preprocessing_model = (
     PipelineModel
@@ -186,9 +179,9 @@ print(
 )
 
 
-# ============================================================
+
 # 6. Recreate final train/test split
-# ============================================================
+
 
 train_df, test_df = (
     df.randomSplit(
@@ -209,9 +202,9 @@ print(
 )
 
 
-# ============================================================
+
 # 7. Apply saved preprocessing
-# ============================================================
+
 
 train_prepared = (
     preprocessing_model
@@ -234,9 +227,7 @@ print(
 )
 
 
-# ============================================================
 # 8. Recover model feature names
-# ============================================================
 
 def get_feature_names(
     prepared_df
@@ -298,9 +289,7 @@ def get_feature_names(
                 in feature_info
             ]
 
-    # --------------------------------------------------------
     # Fallback
-    # --------------------------------------------------------
 
     first_vector = (
         prepared_df
@@ -358,9 +347,9 @@ print(
 )
 
 
-# ============================================================
+
 # 9. Map one-hot features back to original variables
-# ============================================================
+
 
 CATEGORY_PREFIX_MAP = {
 
@@ -445,9 +434,9 @@ def get_encoded_category_info(
     )
 
 
-# ============================================================
+
 # 10. Score test dataset with final MLP model
-# ============================================================
+
 
 test_scored = (
     mlp_model
@@ -468,7 +457,7 @@ print(
 )
 
 
-# ============================================================
+
 # 11. Select high-confidence diagnostic cases
 #
 # TP = actual default, predicted default
@@ -479,7 +468,7 @@ print(
 # We deliberately select high-confidence examples because they
 # are useful for investigating why the model is confidently
 # correct or confidently wrong.
-# ============================================================
+
 
 def select_case(
     case_type,
@@ -539,9 +528,9 @@ def select_case(
         return None
 
 
-    # --------------------------------------------------------
+
     # Save the original ML-table values BEFORE interpretation
-    # --------------------------------------------------------
+
 
     raw_values = {
 
@@ -633,9 +622,9 @@ for case_spec in case_specs:
         )
 
 
-# ============================================================
+
 # 12. Save diagnostic case summary
-# ============================================================
+
 
 case_summary_rows = [
 
@@ -693,9 +682,9 @@ print(
 )
 
 
-# ============================================================
+
 # 13. Convert Spark feature vectors to NumPy
-# ============================================================
+
 
 def feature_vectors_to_numpy(
     spark_df,
@@ -731,9 +720,9 @@ def feature_vectors_to_numpy(
     )
 
 
-# ============================================================
+
 # 14. Create SHAP background pool
-# ============================================================
+
 
 background_pool_df = (
 
@@ -765,9 +754,9 @@ print(
 )
 
 
-# ============================================================
+
 # 15. Summarize background with k-means
-# ============================================================
+
 
 background_summary = (
     shap.kmeans(
@@ -783,9 +772,9 @@ print(
 )
 
 
-# ============================================================
+
 # 16. Create held-out global explanation sample
-# ============================================================
+
 
 global_explain_df = (
 
@@ -817,9 +806,9 @@ print(
 )
 
 
-# ============================================================
+
 # 17. Batched Spark MLP probability prediction
-# ============================================================
+
 
 def mlp_predict_proba_numpy(
     X
@@ -986,9 +975,9 @@ def mlp_predict_default_probability(
     )
 
 
-# ============================================================
+
 # 18. Verify prediction wrapper
-# ============================================================
+
 
 test_probability_output = (
     mlp_predict_proba_numpy(
@@ -1011,9 +1000,9 @@ print(
 )
 
 
-# ============================================================
+
 # 19. Create Kernel SHAP explainer
-# ============================================================
+
 
 shap_explainer = (
     shap.KernelExplainer(
@@ -1036,9 +1025,9 @@ print(
 )
 
 
-# ============================================================
+
 # 20. Global SHAP explanation
-# ============================================================
+
 
 global_shap_values = (
     shap_explainer
@@ -1077,9 +1066,9 @@ print(
 )
 
 
-# ============================================================
+
 # 21. Calculate transformed-feature global SHAP importance
-# ============================================================
+
 
 mean_absolute_shap = (
 
@@ -1160,9 +1149,9 @@ global_shap_df.write \
     )
 
 
-# # ============================================================
+# 
 # # 22. Aggregate SHAP back to original business variables
-# # ============================================================
+# 
 
 # grouped_shap_df = (
 
@@ -1215,7 +1204,7 @@ global_shap_df.write \
 #         "lc_xai_mlp_fico_shap_global_grouped"
 #     )
 
-# ============================================================
+
 # 22. Aggregate SHAP to original business variables
 #
 # IMPORTANT:
@@ -1224,7 +1213,7 @@ global_shap_df.write \
 #
 # This avoids artificially favouring categorical variables
 # simply because they have many one-hot encoded dimensions.
-# ============================================================
+
 
 from collections import defaultdict
 
@@ -1260,11 +1249,11 @@ for (
     feature_indices
 ) in group_feature_indices.items():
 
-    # --------------------------------------------------------
+
     # For every explained borrower:
     # sum SHAP contributions of all encoded dimensions
     # belonging to this original variable.
-    # --------------------------------------------------------
+
 
     grouped_contributions = (
         global_shap_values[
@@ -1277,9 +1266,9 @@ for (
     )
 
 
-    # --------------------------------------------------------
+
     # Global importance of the original feature
-    # --------------------------------------------------------
+
 
     grouped_mean_absolute_shap = float(
         np.mean(
@@ -1347,9 +1336,9 @@ grouped_shap_df.write \
         "dissertation.lendingclub."
         "lc_xai_mlp_fico_shap_global_grouped"
     )
-# ============================================================
+
 # 23. Save global SHAP summary plot
-# ============================================================
+
 
 plt.figure()
 
@@ -1400,9 +1389,9 @@ print(
 )
 
 
-# ============================================================
+
 # 24. Save global SHAP importance plot
-# ============================================================
+
 
 plt.figure()
 
@@ -1454,9 +1443,9 @@ print(
 )
 
 
-# ============================================================
+
 # 25. Plot grouped original-feature SHAP importance
-# ============================================================
+
 
 grouped_top_pd = (
 
@@ -1538,9 +1527,9 @@ print(
 )
 
 
-# ============================================================
+
 # 26. Prepare local SHAP cases
-# ============================================================
+
 
 local_np = (
     np.vstack(
@@ -1556,9 +1545,9 @@ local_np = (
 )
 
 
-# ============================================================
+
 # 27. Calculate local SHAP values
-# ============================================================
+
 
 local_shap_values = (
     shap_explainer
@@ -1597,9 +1586,9 @@ print(
 )
 
 
-# ============================================================
+
 # 28. Helper for original human-readable feature values
-# ============================================================
+
 
 # def get_original_value_info(
 #     transformed_feature,
@@ -1623,9 +1612,9 @@ print(
 #     )
 
 
-#     # --------------------------------------------------------
+#    
 #     # Normal numerical / engineered variable
-#     # --------------------------------------------------------
+#    
 #     sentinel_missing_features = {
 #     "mths_since_last_delinq",
 #     "emp_length_years",
@@ -1679,9 +1668,9 @@ print(
 #     #     }
 
 
-#     # --------------------------------------------------------
+#    
 #     # One-hot encoded categorical variable
-#     # --------------------------------------------------------
+#    
 
 #     category_status = (
 
@@ -1738,9 +1727,9 @@ def get_original_value_info(
         original_feature
     )
 
-    # --------------------------------------------------------
+
     # Numerical / engineered variable
-    # --------------------------------------------------------
+
 
     if encoded_category is None:
 
@@ -1784,9 +1773,9 @@ def get_original_value_info(
         }
 
 
-    # --------------------------------------------------------
+
     # One-hot encoded categorical variable
-    # --------------------------------------------------------
+
 
     category_is_active = (
         str(original_value)
@@ -1820,9 +1809,9 @@ def get_original_value_info(
         "display_value":
             display_value
     }
-# ============================================================
+
 # 29. Create final readable local SHAP table
-# ============================================================
+
 
 local_shap_rows = []
 
@@ -2011,9 +2000,9 @@ local_shap_df.write \
     )
 
 
-# ============================================================
+
 # 30. Prepare human-readable waterfall display values
-# ============================================================
+
 
 def build_waterfall_display_values(
     case
@@ -2049,9 +2038,9 @@ def build_waterfall_display_values(
     )
 
 
-# ============================================================
+
 # 31. Determine Kernel SHAP expected value
-# ============================================================
+
 
 expected_value = float(
 
@@ -2071,9 +2060,9 @@ print(
 )
 
 
-# ============================================================
+
 # 32. Create final local waterfall plots
-# ============================================================
+
 
 for (
     case_index,
@@ -2168,9 +2157,9 @@ for (
     )
 
 
-# ============================================================
+
 # 33. Save SHAP methodology/configuration
-# ============================================================
+
 
 config_rows = [
 
@@ -2235,9 +2224,9 @@ config_df.write \
     )
 
 
-# ============================================================
+
 # 34. Final output summary
-# ============================================================
+
 
 print(
     "\n"
