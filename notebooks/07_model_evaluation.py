@@ -16,9 +16,9 @@ comparison_rounded = comparison_df.select(
     col("model"),
     spark_round(col("auc"), 4).alias("auc"),
     spark_round(col("accuracy"), 4).alias("accuracy"),
-    spark_round(col("f1"), 4).alias("f1"),
-    spark_round(col("precision"), 4).alias("precision"),
-    spark_round(col("recall"), 4).alias("recall"),
+    spark_round(col("f1"), 4).alias("weighted_f1"),
+    spark_round(col("precision"), 4).alias("weighted_precision"),
+    spark_round(col("recall"), 4).alias("weighted_recall"),
     spark_round(col("default_precision"), 4).alias("default_precision"),
     spark_round(col("default_recall"), 4).alias("default_recall"),
     spark_round(col("default_f1"), 4).alias("default_f1")
@@ -36,9 +36,9 @@ display(
     comparison_rounded.orderBy(col("default_recall").desc())
 )
 
-# comparison_rounded.write.mode("overwrite").format("delta").option("overwriteSchema", "true").saveAsTable("dissertation.lendingclub.lc_2007_2017_model_comparison")
+comparison_rounded.write.mode("overwrite").format("delta").option("overwriteSchema", "true").saveAsTable("dissertation.lendingclub.lc_2007_2017_model_comparison")
 
-# print("Saved table: dissertation.lendingclub.lc_2007_2017_model_comparison")
+print("Saved table: dissertation.lendingclub.lc_2007_2017_model_comparison")
 
 
 lr_fico_metrics = spark.table("dissertation.lendingclub.lc_2007_2017_logistic_regression_fico_metrics")
@@ -57,9 +57,9 @@ comparison_fico_rounded = comparison_fico_df.select(
     col("model"),
     spark_round(col("auc"), 4).alias("auc"),
     spark_round(col("accuracy"), 4).alias("accuracy"),
-    spark_round(col("f1"), 4).alias("f1"),
-    spark_round(col("precision"), 4).alias("precision"),
-    spark_round(col("recall"), 4).alias("recall"),
+    spark_round(col("f1"), 4).alias("weighted_f1"),
+    spark_round(col("precision"), 4).alias("weighted_precision"),
+    spark_round(col("recall"), 4).alias("weighted_recall"),
     spark_round(col("default_precision"), 4).alias("default_precision"),
     spark_round(col("default_recall"), 4).alias("default_recall"),
     spark_round(col("default_f1"), 4).alias("default_f1")
@@ -75,4 +75,16 @@ display(
 print("Models FICO ranked by default recall:")
 display(
     comparison_fico_rounded.orderBy(col("default_recall").desc())
+)
+comparison_fico_rounded.write \
+    .mode("overwrite") \
+    .format("delta") \
+    .option("overwriteSchema", "true") \
+    .saveAsTable(
+        "dissertation.lendingclub.lc_2007_2017_model_comparison_fico"
+    )
+
+print(
+    "Saved table: "
+    "dissertation.lendingclub.lc_2007_2017_model_comparison_fico"
 )

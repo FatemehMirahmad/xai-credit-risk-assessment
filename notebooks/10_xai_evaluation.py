@@ -1794,7 +1794,7 @@ plt.barh(
 
 
 plt.xlabel(
-    "Number of models with feature in Top 20"
+    "Number of models with a Top-20 component"
 )
 
 
@@ -1804,7 +1804,7 @@ plt.ylabel(
 
 
 plt.title(
-    "Cross-Model Global XAI Consensus"
+    "Cross-Model Original-Feature XAI Consensus"
 )
 
 

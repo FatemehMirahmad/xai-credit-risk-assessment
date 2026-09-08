@@ -26,7 +26,9 @@ df_clean = df_raw.select(
     trim(col("emp_length")).alias("emp_length"),
     trim(col("home_ownership")).alias("home_ownership"),
     to_double("annual_inc").alias("annual_inc"),
+    to_double("annual_inc_joint").alias("annual_inc_joint"),
     trim(col("verification_status")).alias("verification_status"),
+    trim(col("verification_status_joint")).alias("verification_status_joint"),
     trim(col("earliest_cr_line")).alias("earliest_cr_line"),
 
 
@@ -36,6 +38,7 @@ df_clean = df_raw.select(
     trim(col("addr_state")).alias("addr_state"),
 
     to_double("dti").alias("dti"),
+    to_double("dti_joint").alias("dti_joint"),
     to_int("delinq_2yrs").alias("delinq_2yrs"),
     to_int("inq_last_6mths").alias("inq_last_6mths"),
     to_double("mths_since_last_delinq").alias("mths_since_last_delinq"),
@@ -91,6 +94,50 @@ df_clean.select("loan_status").distinct().show()
 df_clean = df_clean.withColumn("default_flag",(when(col("loan_status").isin("Default","Charged Off","Late (31-120 days)","Late (16-30 days)"),1).otherwise(0)))
 df_clean.select("default_flag").distinct().show()
 
+df_clean = df_clean.withColumn(
+    "application_type",
+    when(
+        col("application_type").isin("Individual", "INDIVIDUAL"),
+        "INDIVIDUAL"
+    ).when(
+        col("application_type").isin("Joint App", "JOINT"),
+        "JOINT"
+    ).otherwise(
+        trim(col("application_type"))
+    )
+)
+# Use combined financial information for joint applications
+df_clean = df_clean.withColumn(
+    "effective_annual_inc",
+    when(
+        (col("application_type") == "JOINT")
+        & col("annual_inc_joint").isNotNull(),
+        col("annual_inc_joint")
+    ).otherwise(
+        col("annual_inc")
+    )
+)
+
+df_clean = df_clean.withColumn(
+    "effective_dti",
+    when(
+        (col("application_type") == "JOINT")
+        & col("dti_joint").isNotNull(),
+        col("dti_joint")
+    ).otherwise(
+        col("dti")
+    )
+)
+df_clean = df_clean.withColumn(
+    "effective_verification_status",
+    when(
+        (col("application_type") == "JOINT")
+        & col("verification_status_joint").isNotNull(),
+        col("verification_status_joint")
+    ).otherwise(
+        col("verification_status")
+    )
+)
 # making emp_length_years out of emp_length
 df_clean = df_clean.withColumn(
     "emp_length_years",
@@ -123,8 +170,8 @@ display(df_clean.limit(10))
 
 essential_cols = [
     "loan_amnt",
-    "annual_inc",
-    "dti",
+    "effective_annual_inc",
+    "effective_dti",
     "term_months",
     "installment",
     "loan_status",
@@ -135,8 +182,8 @@ for c in essential_cols:
     df_clean = df_clean.filter(col(c).isNotNull())
 print("Clean rows after removing nulls:", df_clean.count())
 df_clean = df_clean.filter(col("loan_amnt").cast("double") > 0)
-df_clean = df_clean.filter(col("annual_inc").cast("double") >= 0)
-df_clean = df_clean.filter(col("dti").cast("double") >= 0)
+df_clean = df_clean.filter(col("effective_annual_inc") >= 0)
+df_clean = df_clean.filter(col("effective_dti") >= 0)
 print("Clean rows after filter:", df_clean.count())
 display(df_clean.filter(col("dti").cast("double") < 0))
 print("Clean rows:", df_clean.count())

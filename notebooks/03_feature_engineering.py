@@ -1,7 +1,8 @@
 from pyspark.sql.functions import when, col, try_divide, lit, sum
 
 df_labeled = spark.table('dissertation.lendingclub.lc_2007_2017_clean')
-
+df_labeled = (df_labeled.withColumn("annual_inc_model",col("effective_annual_inc"))
+              .withColumn("dti_model",col("effective_dti")))
 print('Input table: dissertation.lendingclub.lc_2007_2017_clean')
 print('Rows:', df_labeled.count())
 print('Columns:', len(df_labeled.columns))
@@ -25,9 +26,9 @@ if 'source_period' in df_labeled.columns:
 
 
 # creating ratios
-df_labeled = df_labeled.withColumn('loan_to_income_ratio',try_divide(col('loan_amnt'),col('annual_inc')))
-df_labeled = df_labeled.withColumn('installment_to_income_ratio',try_divide(col('installment'),col('annual_inc')/lit(12)))
-df_labeled = df_labeled.withColumn('revol_bal_to_income_ratio',try_divide(col('revol_bal'),col('annual_inc')))
+df_labeled = df_labeled.withColumn('loan_to_income_ratio',try_divide(col('loan_amnt'),col('annual_inc_model')))
+df_labeled = df_labeled.withColumn('installment_to_income_ratio',try_divide(col('installment'),col('annual_inc_model')/lit(12)))
+df_labeled = df_labeled.withColumn('revol_bal_to_income_ratio',try_divide(col('revol_bal'),col('annual_inc_model')))
 df_labeled = df_labeled.withColumn('open_acc_to_total_acc_ratio',try_divide(col('open_acc'),col('total_acc')))
 
 # Creating simple risk flags
@@ -158,8 +159,8 @@ base_selected_cols= ['loan_amnt',
     'funded_amnt_inv',
     'term_months',
     'installment',
-    'annual_inc',
-    'dti',
+    'annual_inc_model',
+    'dti_model',
     'delinq_2yrs',
     'inq_last_6mths',
     'mths_since_last_delinq',
@@ -199,7 +200,7 @@ base_selected_cols= ['loan_amnt',
     'has_mths_since_last_delinq',
     'default_flag',
     'home_ownership',
-    'verification_status',
+    'effective_verification_status',
     'purpose',
     'addr_state',
     'initial_list_status',
@@ -207,6 +208,11 @@ base_selected_cols= ['loan_amnt',
 
 print('Preparing df_ml_no_leakage: ')
 df_ml_no_leakage = prepare_ml_table(df_labeled,base_selected_cols,'df_ml_no_leakage')
+df_ml_no_leakage = (df_ml_no_leakage.withColumnRenamed("annual_inc_model","annual_inc")
+                    .withColumnRenamed("dti_model","dti")
+                    .withColumnRenamed("effective_verification_status","verification_status")
+                    )
+
 print('No-leakage table: ')
 print('Rows:', df_ml_no_leakage.count())
 print('Columns:', len(df_ml_no_leakage.columns))
@@ -232,7 +238,10 @@ extra_credit_cols  = ['fico_score',
 
 print('Preparing df_ml_no_leakage_fico: ')
 df_ml_no_leakage_fico = prepare_ml_table(df_labeled,base_selected_cols + extra_credit_cols,'df_ml_no_leakage_fico')
-
+df_ml_no_leakage_fico = (df_ml_no_leakage_fico.withColumnRenamed("annual_inc_model","annual_inc")
+                         .withColumnRenamed("dti_model","dti")
+                         .withColumnRenamed("effective_verification_status","verification_status")
+)
 print('No-leakage table with FICO / bankruptcy / mortgage features')
 print('Rows:', df_ml_no_leakage_fico.count())
 print('Columns:', len(df_ml_no_leakage_fico.columns))

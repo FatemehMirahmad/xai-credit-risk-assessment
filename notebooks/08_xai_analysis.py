@@ -69,7 +69,7 @@ def get_feature_names(pipeline_model, source_df):
             for x in feature_info
         ]
     return feature_names    
-
+# Logistic Regression Global Explanation
 lr_model = lr_pipeline.stages[-1]
 lr_feature_names = get_feature_names(
     lr_pipeline,df)
@@ -126,9 +126,7 @@ print(
     "dissertation.lendingclub."
     "lc_xai_logistic_regression_fico_coefficients"
 )
-# ---------------------------------------------------------
-# Decision Tree - Global Explanation
-# ---------------------------------------------------------
+# Decision Tree Global Explanation
 
 dt_model = dt_pipeline.stages[-1]
 
@@ -181,9 +179,7 @@ print(
     "dissertation.lendingclub."
     "lc_xai_decision_tree_fico_importance"
 )
-# ---------------------------------------------------------
 # Random Forest - Global Explanation
-# ---------------------------------------------------------
 
 rf_model = rf_pipeline.stages[-1]
 

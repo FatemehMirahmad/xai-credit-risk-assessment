@@ -68,7 +68,6 @@ MLP_MODEL_PATH = (
 
 RANDOM_SEED = 42
 
-----
 # SHAP configuration----
 
 # Pool of actual training observations used before k-means
@@ -78,11 +77,12 @@ BACKGROUND_POOL_ROWS = 500
 BACKGROUND_CLUSTERS = 10
 
 # Held-out observations used for sampled global SHAP
-GLOBAL_EXPLAIN_ROWS = 30
+# GLOBAL_EXPLAIN_ROWS = 30
+GLOBAL_EXPLAIN_ROWS = 100
 
 # Number of Kernel SHAP perturbation samples
-SHAP_NSAMPLES = 100
-
+# SHAP_NSAMPLES = 100
+SHAP_NSAMPLES = 200
 # Features displayed in global/local outputs
 TOP_FEATURES = 20
 
@@ -2060,7 +2060,33 @@ print(
 )
 
 
+print("\nSHAP additivity check:")
 
+for case_index, case in enumerate(cases):
+
+    reconstructed_probability = (
+        expected_value
+        + local_shap_values[case_index].sum()
+    )
+
+    actual_probability = (
+        case["default_probability"]
+    )
+
+    difference = abs(
+        reconstructed_probability
+        - actual_probability
+    )
+
+    print(
+        case["case_type"],
+        "| model probability:",
+        round(actual_probability, 6),
+        "| SHAP reconstructed:",
+        round(reconstructed_probability, 6),
+        "| difference:",
+        round(difference, 8)
+    )
 # 32. Create final local waterfall plots
 
 
