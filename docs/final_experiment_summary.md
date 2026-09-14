@@ -17,8 +17,8 @@ Two modelling conditions are compared:
 
 1. **No-FICO condition**
 2. **FICO-enriched condition** with seven extra features:
-                                                          fico_score
-                                                          fico_score_missing
+                                                          `fico_score`
+                                                          `fico_score_missing`
                                                           pub_rec_bankruptcies
                                                           pub_rec_bankruptcies_missing
                                                           has_bankruptcy
