@@ -519,4 +519,37 @@ Their final best ranks were:
 FICO score therefore achieved the strongest overall cross-model consensus.
 Debt-to-income ratio was the second strongest consensus variable.
 
+### Pairwise Explanation Agreement
+The final pairwise explanation agreement was:
+| Model Pair                          | Top-10 Jaccard | Top-20 Jaccard | Spearman Rank Correlation |
+| ----------------------------------- | -------------: | -------------: | ------------------------: |
+| Logistic Regression – Decision Tree |         0.2500 |         0.3793 |                    0.4713 |
+| Logistic Regression – Random Forest |         0.2500 |         0.4815 |                    0.5988 |
+| Logistic Regression – MLP SHAP      |         0.2500 |         0.3793 |                    0.6553 |
+| Decision Tree – Random Forest       |     **0.5385** |     **0.4815** |                    0.6412 |
+| Decision Tree – MLP SHAP            |         0.1765 |         0.3793 |                    0.4207 |
+| Random Forest – MLP SHAP            |         0.2500 |         0.3793 |                **0.6994** |
+
+Top-10 feature overlap was highest between: Decision Tree and Random Forest with: Jaccard = 0.5385
+The strongest overall rank correlation occurred between: Random Forest and MLP SHAP with: Spearman correlation = 0.6994
+The models therefore agree on a meaningful group of important credit-risk variables, but their complete explanation rankings are not interchangeable.
+
+### Final XAI Interpretation
+
+The explanation results provide evidence of both agreement and model-specific behaviour.
+Several variables repeatedly appear across modelling approaches, particularly:
+`fico_score`
+`dti`
+`revol_util`
+`open_acc_to_total_acc_ratio`
+`term_months`
+`mort_acc`
+`total_rev_hi_lim`
+However, the importance assigned to these features differs depending on the model.
+This is expected because the four models learn different mathematical representations of the relationship between borrower characteristics and default.
+The cross-model comparison therefore supports two conclusions:
+
+- There is a common group of variables that consistently influences credit-risk predictions.
+- The explanation provided to a stakeholder depends partly on the modelling approach used.
+
 Model artifacts, evaluation outputs and Delta tables are stored in Databricks, while code and final dissertation figures are retained in the GitHub repository.
