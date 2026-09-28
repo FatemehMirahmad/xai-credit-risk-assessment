@@ -1,0 +1,144 @@
+# XAI Credit Risk Assessment configuration
+
+project:
+  name: xai-credit-risk-assessment
+  title: Explainable Machine Learning for Credit Risk Assessment
+  random_seed: 42
+
+databricks:
+  catalog: dissertation
+  schema: lendingclub
+  tables:
+    no_fico: dissertation.lendingclub.lc_2007_2017_ml_no_leakage
+    enriched: dissertation.lendingclub.lc_2007_2017_ml_no_leakage_fico
+    final_validation: dissertation.lendingclub.lc_2007_2017_final_technical_validation
+  volumes:
+    base: /Volumes/dissertation/lendingclub
+    model_artifacts: /Volumes/dissertation/lendingclub/model_artifacts
+    xai_outputs: /Volumes/dissertation/lendingclub/xai_outputs
+
+data:
+  target_column: default_flag
+  target_definition:
+    positive_label: 1
+    negative_label: 0
+    positive_statuses:
+      - Charged Off
+      - Default
+      - Late (31-120 days)
+      - Late (16-30 days)
+    negative_statuses:
+      - Fully Paid
+
+  split:
+    train_ratio: 0.80
+    test_ratio: 0.20
+    seed: 42
+
+  expected_sample:
+    eligible_rows: 455318
+    training_rows: 364434
+    test_rows: 90884
+    test_defaults: 23495
+    test_non_defaults: 67389
+
+  categorical_columns:
+    - home_ownership
+    - verification_status
+    - purpose
+    - addr_state
+    - initial_list_status
+    - application_type
+
+  excluded_predictors:
+    - id
+    - loan_status
+    - grade
+    - sub_grade
+    - int_rate
+
+  enriched_fields:
+    - fico_score
+    - fico_score_missing
+    - pub_rec_bankruptcies
+    - pub_rec_bankruptcies_missing
+    - has_bankruptcy
+    - mort_acc
+    - mort_acc_missing
+
+preprocessing:
+  categorical_missing_value: Unknown
+  sparse_numeric_missing_value: -1
+  string_indexer:
+    handle_invalid: keep
+  one_hot_encoder:
+    enabled: true
+  standard_scaler:
+    with_std: true
+    with_mean: false
+  feature_assembler_output: features_unscaled
+  scaled_features_output: features
+
+models:
+  logistic_regression:
+    max_iter: 50
+    weighted_main_model: false
+
+  decision_tree:
+    final_depth: 8
+    seed: 42
+
+  random_forest:
+    num_trees: 50
+    max_depth: 12
+    seed: 42
+
+  multilayer_perceptron:
+    layers: [135, 64, 32, 2]
+    seed: 42
+
+evaluation:
+  positive_class: 1
+  use_natural_test_class_distribution: true
+  metrics:
+    - auc
+    - accuracy
+    - weighted_precision
+    - weighted_recall
+    - weighted_f1
+    - default_precision
+    - default_recall
+    - default_f1
+    - confusion_matrix
+
+explainability:
+  native:
+    logistic_regression_coefficients: true
+    decision_tree_feature_importance: true
+    random_forest_feature_importance: true
+
+  kernel_shap:
+    model: multilayer_perceptron
+    dataset: enriched
+    background_pool_size: 500
+    kmeans_background_centres: 10
+    global_sample_size: 100
+    nsamples: 200
+    top_n_features: 20
+    transformed_feature_count: 135
+    output_class: 1
+    output_interpretation: default_probability
+    group_one_hot_features_to_original_variable: true
+    local_cases:
+      - true_positive
+      - true_negative
+      - false_positive
+      - false_negative
+    check_additivity: true
+
+reproducibility:
+  save_model_pipelines: true
+  preserve_feature_order: true
+  save_metrics: true
+  save_xai_outputs: true
+  run_final_validation: true
