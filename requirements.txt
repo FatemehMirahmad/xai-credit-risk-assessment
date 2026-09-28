@@ -1,0 +1,14 @@
+# Core data analysis
+numpy
+pandas
+scipy
+
+# Machine learning
+scikit-learn
+pyspark
+
+# Explainability
+shap
+
+# Visualisation
+matplotlib
