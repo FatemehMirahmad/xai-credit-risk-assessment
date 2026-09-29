@@ -1,0 +1,9 @@
+model,condition,n_test,tp,tn,fp,fn,source_predictions_table
+LR,no_fico,90884,3853,64507,2882,19642,dissertation.lendingclub.lc_2007_2017_logistic_regression_predictions
+DT,no_fico,90884,3030,64707,2682,20465,dissertation.lendingclub.lc_2007_2017_decision_tree_predictions
+RF,no_fico,90884,998,66828,561,22497,dissertation.lendingclub.lc_2007_2017_random_forest_predictions
+MLP,no_fico,90884,4051,64462,2927,19444,dissertation.lendingclub.lc_2007_2017_deep_learning_mlp_predictions
+LR,fico_enriched,90884,3976,64431,2958,19519,dissertation.lendingclub.lc_2007_2017_logistic_regression_fico_predictions
+DT,fico_enriched,90884,2817,65105,2284,20678,dissertation.lendingclub.lc_2007_2017_decision_tree_fico_predictions
+RF,fico_enriched,90884,1200,66759,630,22295,dissertation.lendingclub.lc_2007_2017_random_forest_fico_predictions
+MLP,fico_enriched,90884,3860,64525,2864,19635,dissertation.lendingclub.lc_2007_2017_deep_learning_mlp_fico_predictions

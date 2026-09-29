@@ -1,0 +1,132 @@
+section,check_name,status,details
+Dataset,Table exists: dissertation.lendingclub.lc_2007_2017_ml_no_leakage,PASS,
+Dataset,Table exists: dissertation.lendingclub.lc_2007_2017_ml_no_leakage_fico,PASS,
+Dataset,No-FICO row count,PASS,"455,318"
+Dataset,FICO-enriched row count,PASS,"455,318"
+Dataset,Dataset row counts are identical,PASS,"no-FICO=455,318, FICO-enriched=455,318"
+Identifier,No-FICO identifier handling,PASS,id intentionally absent from final ML feature table; row fingerprints used for validation
+Identifier,FICO-enriched identifier handling,PASS,id intentionally absent from final ML feature table; row fingerprints used for validation
+Target,No-FICO: no NULL target values,PASS,NULL targets=0
+Target,No-FICO: default_flag is binary,PASS,"values=[0, 1]"
+Target,FICO-enriched: no NULL target values,PASS,NULL targets=0
+Target,FICO-enriched: default_flag is binary,PASS,"values=[0, 1]"
+Leakage,No-FICO: prohibited leakage variables absent,PASS,none
+Leakage,FICO-enriched: prohibited leakage variables absent,PASS,none
+Feature Alignment,No unexpected features exist only in no-FICO,PASS,[]
+Feature Alignment,FICO-enriched dataset contains only the intended enrichment variables,PASS,"enrichment features=['fico_score', 'fico_score_missing', 'has_bankruptcy', 'mort_acc', 'mort_acc_missing', 'pub_rec_bankruptcies', 'pub_rec_bankruptcies_missing']; unexpected=[]; missing expected=[]"
+FICO,fico_score present in enriched dataset,PASS,
+FICO,fico_score absent from no-FICO dataset,PASS,
+FICO,fico_range_low excluded from final modelling table,PASS,
+FICO,fico_range_high excluded from final modelling table,PASS,
+Dataset Alignment,FICO-enriched and no-FICO datasets contain identical shared-variable rows,PASS,mismatched fingerprints=0
+Missing Values,No-FICO: no NULL predictors,PASS,none
+Missing Values,FICO-enriched: no NULL predictors,PASS,none
+NaN,No-FICO: no NaN predictors,PASS,none
+NaN,FICO-enriched: no NaN predictors,PASS,none
+Split,No-FICO split reconstructs all rows,PASS,
+Split,FICO-enriched split reconstructs all rows,PASS,
+Split,No-FICO test size matches final modelling run,PASS,"90,884"
+Split,FICO-enriched test size matches final modelling run,PASS,"90,884"
+Split,FICO-enriched and no-FICO test observations align,PASS,mismatched test fingerprints=0
+Metrics,LR no-FICO: table exists,PASS,dissertation.lendingclub.lc_2007_2017_logistic_regression_metrics
+Metrics,LR no-FICO: exactly one metrics row,PASS,rows=1
+Metrics,DT no-FICO: table exists,PASS,dissertation.lendingclub.lc_2007_2017_decision_tree_metrics
+Metrics,DT no-FICO: exactly one metrics row,PASS,rows=1
+Metrics,RF no-FICO: table exists,PASS,dissertation.lendingclub.lc_2007_2017_random_forest_metrics
+Metrics,RF no-FICO: exactly one metrics row,PASS,rows=1
+Metrics,MLP no-FICO: table exists,PASS,dissertation.lendingclub.lc_2007_2017_deep_learning_mlp_metrics
+Metrics,MLP no-FICO: exactly one metrics row,PASS,rows=1
+Metrics,LR FICO: table exists,PASS,dissertation.lendingclub.lc_2007_2017_logistic_regression_fico_metrics
+Metrics,LR FICO: exactly one metrics row,PASS,rows=1
+Metrics,DT FICO: table exists,PASS,dissertation.lendingclub.lc_2007_2017_decision_tree_fico_metrics
+Metrics,DT FICO: exactly one metrics row,PASS,rows=1
+Metrics,RF FICO: table exists,PASS,dissertation.lendingclub.lc_2007_2017_random_forest_fico_metrics
+Metrics,RF FICO: exactly one metrics row,PASS,rows=1
+Metrics,MLP FICO: table exists,PASS,dissertation.lendingclub.lc_2007_2017_deep_learning_mlp_fico_metrics
+Metrics,MLP FICO: exactly one metrics row,PASS,rows=1
+Predictions,LR no-FICO: prediction table exists,PASS,dissertation.lendingclub.lc_2007_2017_logistic_regression_predictions
+Predictions,LR no-FICO: prediction count matches test set,PASS,"90,884"
+Predictions,DT no-FICO: prediction table exists,PASS,dissertation.lendingclub.lc_2007_2017_decision_tree_predictions
+Predictions,DT no-FICO: prediction count matches test set,PASS,"90,884"
+Predictions,RF no-FICO: prediction table exists,PASS,dissertation.lendingclub.lc_2007_2017_random_forest_predictions
+Predictions,RF no-FICO: prediction count matches test set,PASS,"90,884"
+Predictions,MLP no-FICO: prediction table exists,PASS,dissertation.lendingclub.lc_2007_2017_deep_learning_mlp_predictions
+Predictions,MLP no-FICO: prediction count matches test set,PASS,"90,884"
+Predictions,LR FICO: prediction table exists,PASS,dissertation.lendingclub.lc_2007_2017_logistic_regression_fico_predictions
+Predictions,LR FICO: prediction count matches test set,PASS,"90,884"
+Predictions,DT FICO: prediction table exists,PASS,dissertation.lendingclub.lc_2007_2017_decision_tree_fico_predictions
+Predictions,DT FICO: prediction count matches test set,PASS,"90,884"
+Predictions,RF FICO: prediction table exists,PASS,dissertation.lendingclub.lc_2007_2017_random_forest_fico_predictions
+Predictions,RF FICO: prediction count matches test set,PASS,"90,884"
+Predictions,MLP FICO: prediction table exists,PASS,dissertation.lendingclub.lc_2007_2017_deep_learning_mlp_fico_predictions
+Predictions,MLP FICO: prediction count matches test set,PASS,"90,884"
+Metric Reproduction,LR no-FICO: accuracy,PASS,"calculated=0.7521675983, stored=0.7521675983"
+Metric Reproduction,LR no-FICO: default_precision,PASS,"calculated=0.5720861173, stored=0.5720861173"
+Metric Reproduction,LR no-FICO: default_recall,PASS,"calculated=0.1639923388, stored=0.1639923388"
+Metric Reproduction,LR no-FICO: default_f1,PASS,"calculated=0.2549123387, stored=0.2549123387"
+Metric Reproduction,DT no-FICO: accuracy,PASS,"calculated=0.7453127063, stored=0.7453127063"
+Metric Reproduction,DT no-FICO: default_precision,PASS,"calculated=0.5304621849, stored=0.5304621849"
+Metric Reproduction,DT no-FICO: default_recall,PASS,"calculated=0.1289636093, stored=0.1289636093"
+Metric Reproduction,DT no-FICO: default_f1,PASS,"calculated=0.2074845071, stored=0.2074845071"
+Metric Reproduction,RF no-FICO: accuracy,PASS,"calculated=0.7462919766, stored=0.7462919766"
+Metric Reproduction,RF no-FICO: default_precision,PASS,"calculated=0.6401539448, stored=0.6401539448"
+Metric Reproduction,RF no-FICO: default_recall,PASS,"calculated=0.0424771228, stored=0.0424771228"
+Metric Reproduction,RF no-FICO: default_f1,PASS,"calculated=0.0796679173, stored=0.0796679173"
+Metric Reproduction,MLP no-FICO: accuracy,PASS,"calculated=0.7538510629, stored=0.7538510629"
+Metric Reproduction,MLP no-FICO: default_precision,PASS,"calculated=0.5805388363, stored=0.5805388363"
+Metric Reproduction,MLP no-FICO: default_recall,PASS,"calculated=0.1724196638, stored=0.1724196638"
+Metric Reproduction,MLP no-FICO: default_f1,PASS,"calculated=0.2658747088, stored=0.2658747088"
+Metric Reproduction,LR FICO: accuracy,PASS,"calculated=0.7526847410, stored=0.7526847410"
+Metric Reproduction,LR FICO: default_precision,PASS,"calculated=0.5734064032, stored=0.5734064032"
+Metric Reproduction,LR FICO: default_recall,PASS,"calculated=0.1692274952, stored=0.1692274952"
+Metric Reproduction,LR FICO: default_f1,PASS,"calculated=0.2613296526, stored=0.2613296526"
+Metric Reproduction,DT FICO: accuracy,PASS,"calculated=0.7473482681, stored=0.7473482681"
+Metric Reproduction,DT FICO: default_precision,PASS,"calculated=0.5522446579, stored=0.5522446579"
+Metric Reproduction,DT FICO: default_recall,PASS,"calculated=0.1198978506, stored=0.1198978506"
+Metric Reproduction,DT FICO: default_f1,PASS,"calculated=0.1970205623, stored=0.1970205623"
+Metric Reproduction,RF FICO: accuracy,PASS,"calculated=0.7477553805, stored=0.7477553805"
+Metric Reproduction,RF FICO: default_precision,PASS,"calculated=0.6557377049, stored=0.6557377049"
+Metric Reproduction,RF FICO: default_recall,PASS,"calculated=0.0510746967, stored=0.0510746967"
+Metric Reproduction,RF FICO: default_f1,PASS,"calculated=0.0947680158, stored=0.0947680158"
+Metric Reproduction,MLP FICO: accuracy,PASS,"calculated=0.7524426742, stored=0.7524426742"
+Metric Reproduction,MLP FICO: default_precision,PASS,"calculated=0.5740630577, stored=0.5740630577"
+Metric Reproduction,MLP FICO: default_recall,PASS,"calculated=0.1642902745, stored=0.1642902745"
+Metric Reproduction,MLP FICO: default_f1,PASS,"calculated=0.2554684139, stored=0.2554684139"
+XAI 08,Table exists: dissertation.lendingclub.lc_xai_logistic_regression_fico_coefficients,PASS,
+XAI 08,Expected feature count: dissertation.lendingclub.lc_xai_logistic_regression_fico_coefficients,PASS,"actual=135, expected=135"
+XAI 08,Table exists: dissertation.lendingclub.lc_xai_decision_tree_fico_importance,PASS,
+XAI 08,Expected feature count: dissertation.lendingclub.lc_xai_decision_tree_fico_importance,PASS,"actual=135, expected=135"
+XAI 08,Table exists: dissertation.lendingclub.lc_xai_random_forest_fico_importance,PASS,
+XAI 08,Expected feature count: dissertation.lendingclub.lc_xai_random_forest_fico_importance,PASS,"actual=135, expected=135"
+XAI 09,Table exists: dissertation.lendingclub.lc_xai_mlp_fico_local_cases,PASS,
+XAI 09,Expected row count: dissertation.lendingclub.lc_xai_mlp_fico_local_cases,PASS,"actual=4, expected=4"
+XAI 09,Table exists: dissertation.lendingclub.lc_xai_mlp_fico_shap_global,PASS,
+XAI 09,Expected row count: dissertation.lendingclub.lc_xai_mlp_fico_shap_global,PASS,"actual=135, expected=135"
+XAI 09,Table exists: dissertation.lendingclub.lc_xai_mlp_fico_shap_local,PASS,
+XAI 09,Expected row count: dissertation.lendingclub.lc_xai_mlp_fico_shap_local,PASS,"actual=80, expected=80"
+XAI 09,Table exists: dissertation.lendingclub.lc_xai_mlp_fico_shap_config,PASS,
+XAI 09,Expected row count: dissertation.lendingclub.lc_xai_mlp_fico_shap_config,PASS,"actual=1, expected=1"
+XAI 09,Grouped SHAP table exists,PASS,
+XAI 09,Grouped SHAP table is non-empty,PASS,rows=63
+XAI 09,TP / TN / FP / FN cases all exist,PASS,"['false_negative', 'false_positive', 'true_negative', 'true_positive']"
+SHAP,MLP input feature count,PASS,135
+SHAP,Global explanation sample size,PASS,100
+SHAP,Kernel SHAP nsamples,PASS,200
+SHAP,Background pool size,PASS,500
+SHAP,Background k-means clusters,PASS,10
+XAI 10,Table exists: dissertation.lendingclub.lc_xai_fico_all_model_importance,PASS,
+XAI 10,Expected row count: dissertation.lendingclub.lc_xai_fico_all_model_importance,PASS,"actual=540, expected=540"
+XAI 10,Table exists: dissertation.lendingclub.lc_xai_fico_feature_comparison,PASS,
+XAI 10,Expected row count: dissertation.lendingclub.lc_xai_fico_feature_comparison,PASS,"actual=135, expected=135"
+XAI 10,Table exists: dissertation.lendingclub.lc_xai_fico_pairwise_jaccard,PASS,
+XAI 10,Expected row count: dissertation.lendingclub.lc_xai_fico_pairwise_jaccard,PASS,"actual=12, expected=12"
+XAI 10,Table exists: dissertation.lendingclub.lc_xai_fico_rank_correlation,PASS,
+XAI 10,Expected row count: dissertation.lendingclub.lc_xai_fico_rank_correlation,PASS,"actual=6, expected=6"
+XAI 10,Table exists: dissertation.lendingclub.lc_xai_fico_performance_interpretability,PASS,
+XAI 10,Expected row count: dissertation.lendingclub.lc_xai_fico_performance_interpretability,PASS,"actual=4, expected=4"
+XAI 10,Table exists: dissertation.lendingclub.lc_xai_fico_evaluation_config,PASS,
+XAI 10,Expected row count: dissertation.lendingclub.lc_xai_fico_evaluation_config,PASS,"actual=1, expected=1"
+XAI 10,Table exists: dissertation.lendingclub.lc_xai_fico_consensus_features,PASS,
+XAI 10,Table is non-empty: dissertation.lendingclub.lc_xai_fico_consensus_features,PASS,rows=23
+XAI 10,Table exists: dissertation.lendingclub.lc_xai_fico_original_feature_consensus,PASS,
+XAI 10,Table is non-empty: dissertation.lendingclub.lc_xai_fico_original_feature_consensus,PASS,rows=63
