@@ -143,7 +143,7 @@ An additional experiment using a substantially larger number of trees was also c
 ### Multilayer Perceptron
 
 - Architecture: `[135, 64, 32, 2]`
-- `maxIter = 50`
+- `maxIter = 75`
 - `blockSize = 256`
 - `solver = l-bfgs`
 The Multilayer Perceptron was included as the main neural-network / deep-learning model.
